@@ -46,7 +46,7 @@ function CoinsTable() {
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState("1");
   const currency = useRecoilValue(currencyAtom);
   const navigate = useNavigate();
 
