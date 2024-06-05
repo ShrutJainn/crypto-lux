@@ -10,12 +10,14 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://neondb_owner:OGTH3hxJ2teQ@ep-snowy-bush-a5n8nmex.us-east-2.aws.neon.tech/neondb?sslmode=require"
+  url = "prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMmU2YWRkNmEtZjRhOS00Y2M4LTgzNzctMzIyNjhhMTAxZTg3IiwidGVuYW50X2lkIjoiMGM4MDg2ZTJlOGYyZGE2ZGNhYzdiZTc5NTZkNjhmMjIzYjhlNzJmMDNiNDAyYmExYWQwY2YwMzQyMTcxYmQ2MiIsImludGVybmFsX3NlY3JldCI6IjYxZTJkNjZjLTdkZDItNDU5NC1hZTRjLWFhMTE1YmU3ODgyYyJ9.CstW_kadnSdj08o0Vl7Nquevd8pv6fwSvlRJOfVbMGY"
+  directUrl = "postgresql://neondb_owner:OGTH3hxJ2teQ@ep-snowy-bush-a5n8nmex.us-east-2.aws.neon.tech/neondb?sslmode=require"
 }
 
 model User {
   id Int @id @default(autoincrement())
   email String @unique
+  username String @unique
   name String?
   password String
   coins Coin[]
@@ -27,4 +29,3 @@ model Coin{
   userId Int
   user User @relation(fields: [userId], references: [id])
 }
-
