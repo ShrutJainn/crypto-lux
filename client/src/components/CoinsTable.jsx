@@ -120,7 +120,7 @@ function CoinsTable() {
                         fontFamily: "MontSerrat",
                       }}
                       key={head}
-                      align="right"
+                      align={head === "Coin" ? "" : "right"}
                     >
                       {head}
                     </TableCell>

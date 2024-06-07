@@ -5,6 +5,7 @@ import Layout from "./pages/Layout";
 import { makeStyles } from "@material-ui/core/styles";
 import { RecoilRoot } from "recoil";
 import "react-alice-carousel/lib/alice-carousel.css";
+import LoginPage from "./pages/LoginPage";
 
 const useStyles = makeStyles({
   App: {
@@ -25,6 +26,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/coins/:coinId" element={<CoinPage />} />
             </Route>
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </div>
       </BrowserRouter>

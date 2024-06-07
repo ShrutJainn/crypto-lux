@@ -12,8 +12,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import currencyAtom from "../atoms/currencyAtom";
+import { useState } from "react";
+import AuthModal from "./AuthModal";
+import SideBar from "./SideBar";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   title: {
     flex: 1,
     color: "gold",
@@ -21,7 +24,19 @@ const useStyles = makeStyles({
     fontWeight: "bold",
     cursor: "pointer",
   },
-});
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    fontFamily: "MontSerrat",
+  },
+}));
 
 function Header() {
   const classes = useStyles();
@@ -63,6 +78,8 @@ function Header() {
               <MenuItem value={"USD"}>USD</MenuItem>
               <MenuItem value={"INR"}>INR</MenuItem>
             </Select>
+            {/* <AuthModal /> */}
+            <SideBar />
           </Toolbar>
         </Container>
       </AppBar>

@@ -1,11 +1,12 @@
 {
   "scripts": {
-    "dev": "wrangler dev src/index.js",
-    "deploy": "wrangler deploy --minify src/index.js"
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.15.0",
     "@prisma/extension-accelerate": "^1.1.0",
+    "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "hono": "^4.4.2",
     "jose": "^5.4.0",

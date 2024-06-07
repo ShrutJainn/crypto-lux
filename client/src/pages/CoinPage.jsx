@@ -4,7 +4,12 @@ import { useParams } from "react-router-dom";
 import { SingleCoin } from "../config/api";
 import { useRecoilValue } from "recoil";
 import currencyAtom from "../atoms/currencyAtom";
-import { LinearProgress, Typography, makeStyles } from "@material-ui/core";
+import {
+  Button,
+  LinearProgress,
+  Typography,
+  makeStyles,
+} from "@material-ui/core";
 import CoinInfo from "../components/CoinInfo";
 import ReactHtmlParser from "react-html-parser";
 import { numberWithCommas } from "../components/CoinsTable";
@@ -132,6 +137,9 @@ function CoinPage() {
               M
             </Typography>
           </span>
+          <Button variant="contained" style={{ backgroundColor: "#EEBC1D" }}>
+            Add to Watchlist
+          </Button>
         </div>
       </div>
 
