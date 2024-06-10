@@ -6,8 +6,10 @@
   "dependencies": {
     "@prisma/client": "^5.15.0",
     "@prisma/extension-accelerate": "^1.1.0",
+    "@types/cors": "^2.8.17",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
     "hono": "^4.4.2",
     "jose": "^5.4.0",
     "prisma": "^5.15.0",

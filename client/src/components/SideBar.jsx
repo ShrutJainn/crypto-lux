@@ -5,6 +5,8 @@ import Button from "@material-ui/core/Button";
 import { Typography } from "@material-ui/core";
 import { numberWithCommas } from "./CoinsTable";
 import { AiFillDelete } from "react-icons/ai";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
 const useStyles = makeStyles({
   container: {
     width: 350,
@@ -46,6 +48,8 @@ const useStyles = makeStyles({
 
 export default function SideBar() {
   const { container, watchlist, coinItem } = useStyles();
+  const user = useRecoilValue(userAtom);
+  const name = user.name.charAt(0).toUpperCase() + user.name.slice(1);
   const coins = [
     {
       id: "bitcoin",
@@ -83,14 +87,14 @@ export default function SideBar() {
     <div>
       {["right"].map((anchor) => (
         <React.Fragment key={anchor}>
-          <Button onClick={toggleDrawer(anchor, true)}>{anchor}</Button>
+          <Button onClick={toggleDrawer(anchor, true)}>Profile</Button>
           <Drawer
             anchor={anchor}
             open={state[anchor]}
             onClose={toggleDrawer(anchor, false)}
           >
             <div className={container}>
-              <Typography variant="h3">Welcome, Shrut</Typography>
+              <Typography variant="h3">Welcome, {name}</Typography>
               <div className={watchlist}>
                 <Typography variant="h6">
                   Your <span style={{ color: "#EEBC1D" }}>Coins</span>

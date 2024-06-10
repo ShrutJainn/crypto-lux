@@ -2,6 +2,7 @@ import "dotenv/config";
 import { env } from "hono/adapter";
 
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
@@ -15,12 +16,18 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { protectedRoute } from "./middlewares/protectedRoute";
 
 type Bindings = {
   JWT_SECRET: string;
 };
+type Variables = {
+  user: any;
+};
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+// const app = new Hono();
+app.use("/api/*", cors());
 
 const signupSchema = z.object({
   name: z.string(),
@@ -47,6 +54,7 @@ const loginSchema = z.object({
 app.post("/api/users/signup", async (c) => {
   try {
     const jwtSecret = c.env.JWT_SECRET;
+    const secret = new TextEncoder().encode(jwtSecret);
     const body = await c.req.json();
     const { success } = signupSchema.safeParse(body);
     if (!success) return c.json({ error: "Invalid input types" }, 411);
@@ -73,10 +81,21 @@ app.post("/api/users/signup", async (c) => {
     const jwt = await new SignJWT({ username })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("2h")
+      .setExpirationTime("1w")
       .sign(secret);
 
-    return c.json({ newUser, jwt }, 200);
+    // return c.json({ msg: "User created successfully", newUser, jwt }, 200);
+    return c.json(
+      {
+        msg: "User created successfully",
+        jwt,
+        user: {
+          ...newUser,
+          password: undefined, // This will explicitly remove the password field
+        },
+      },
+      200
+    );
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
   }
@@ -106,10 +125,20 @@ app.post("/api/users/login", async (c) => {
     const jwt = await new SignJWT({ username })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("2h")
+      .setExpirationTime("1w")
       .sign(secret);
 
-    return c.json({ msg: "User logged in successfully", jwt, user }, 200);
+    return c.json(
+      {
+        msg: "User logged in successfully",
+        jwt,
+        user: {
+          ...user,
+          password: undefined, // This will explicitly remove the password field
+        },
+      },
+      200
+    );
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
   }
@@ -139,15 +168,61 @@ app.get("/api/users/:userId", async (c) => {
   }
 });
 
-app.post("/api/coins/:coinId", async (c) => {
+// app.post("/api/coins/:coinId", async (c) => {
+//   try {
+//     const coinId = c.req.param("coinId");
+//     const coin = await axios.get(
+//       `https://api.coingecko.com/api/v3/coins/${coinId}`
+//     );
+//     const { id, symbol, name, market_data } = coin.data;
+//     const { current_price } = market_data;
+//     return c.json({ id, symbol, name, current_price }, 200);
+//   } catch (error: any) {
+//     return c.json({ error: error.message }, 500);
+//   }
+// });
+
+app.get("/api/coins/", protectedRoute, async (c) => {
+  try {
+    const user = c.get("user");
+    const userDb = await prisma.user.findUnique({
+      where: { username: user.username },
+    });
+
+    const coins = await prisma.coin.findMany({
+      where: {
+        userId: userDb?.id,
+      },
+    });
+    return c.json({ coins }, 200);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+app.put("/api/coins/:coinId", protectedRoute, async (c) => {
   try {
     const coinId = c.req.param("coinId");
-    const coin = await axios.get(
+    const user = c.get("user");
+
+    const { data } = await axios.get(
       `https://api.coingecko.com/api/v3/coins/${coinId}`
     );
-    const { id, symbol, name, market_data } = coin.data;
-    const { current_price } = market_data;
-    return c.json({ id, symbol, name, current_price }, 200);
+    const { id, name, symbol } = data;
+    const newCoin = { id, name, symbol, userId: user.id };
+    const res = await prisma.user.update({
+      where: {
+        username: user.username,
+      },
+      data: {
+        coins: {
+          create: newCoin,
+        },
+      },
+      include: { coins: true },
+    });
+    console.log(res);
+    return c.json({ msg: "Coin added successfully" }, 200);
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
   }

@@ -10,11 +10,12 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import currencyAtom from "../atoms/currencyAtom";
 import { useState } from "react";
 import AuthModal from "./AuthModal";
 import SideBar from "./SideBar";
+import userAtom from "../atoms/userAtom";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -42,6 +43,7 @@ function Header() {
   const classes = useStyles();
   const navigate = useNavigate();
   const [currency, setCurrency] = useRecoilState(currencyAtom);
+  const user = useRecoilValue(userAtom);
 
   const darkTheme = createTheme({
     palette: {
@@ -78,8 +80,7 @@ function Header() {
               <MenuItem value={"USD"}>USD</MenuItem>
               <MenuItem value={"INR"}>INR</MenuItem>
             </Select>
-            {/* <AuthModal /> */}
-            <SideBar />
+            {user ? <SideBar /> : <AuthModal />}
           </Toolbar>
         </Container>
       </AppBar>

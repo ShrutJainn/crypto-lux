@@ -82,7 +82,6 @@ function CoinsTable() {
       coin.name.toLowerCase().includes(search) ||
       coin.symbol.toLowerCase().includes(search)
   );
-  console.log(page);
 
   const symbol = currency === "INR" ? "₹" : "$";
 
