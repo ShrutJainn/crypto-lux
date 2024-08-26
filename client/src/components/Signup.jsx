@@ -24,12 +24,13 @@ function Signup({ handleClose }) {
         { name, email, username, password }
       );
       const { newUser } = data;
-      localStorage.setItem("user", JSON.stringify(newUser));
+      localStorage.setItem("user", JSON.stringify(data));
       setUser(newUser);
       toast.success(data.msg);
       handleClose();
     } catch (error) {
-      console.log(error);
+      if (error.response.data.error)
+        return toast.error(error.response.data.error);
     } finally {
       setLoading(false);
     }

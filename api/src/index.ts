@@ -200,7 +200,7 @@ app.get("/api/coins/", protectedRoute, async (c) => {
   }
 });
 
-app.put("/api/coins/:coinId", protectedRoute, async (c) => {
+app.post("/api/coins/:coinId", protectedRoute, async (c) => {
   try {
     const coinId = c.req.param("coinId");
     const user = c.get("user");
@@ -221,8 +221,27 @@ app.put("/api/coins/:coinId", protectedRoute, async (c) => {
       },
       include: { coins: true },
     });
-    console.log(res);
-    return c.json({ msg: "Coin added successfully" }, 200);
+    return c.json(
+      { msg: "Coin added successfully", coin: { id, name, symbol } },
+      200
+    );
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+app.delete("/api/coins/:coinId", protectedRoute, async (c) => {
+  try {
+    const user = c.get("user");
+    const coinId = c.req.param("coinId");
+
+    const res = await prisma.coin.delete({
+      where: {
+        id: coinId,
+      },
+    });
+
+    return c.json({ msg: "Coin deleted successfully", res }, 200);
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
   }

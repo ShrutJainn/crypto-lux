@@ -18,12 +18,14 @@ function Login({ handleClose }) {
         `${import.meta.env.VITE_APP_URL}/users/login`,
         userInput
       );
-      localStorage.setItem("user", JSON.stringify(data.user));
+      console.log(data);
+      localStorage.setItem("user", JSON.stringify(data));
       setUser(data.user);
       toast.success(data.msg);
       handleClose();
     } catch (error) {
-      return toast.error(error.message);
+      if (error.response.data.error)
+        return toast.error(error.response.data.error);
     } finally {
       setLoading(false);
     }

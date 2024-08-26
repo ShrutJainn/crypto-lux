@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { SingleCoin } from "../config/api";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import currencyAtom from "../atoms/currencyAtom";
 import {
   Button,
@@ -13,6 +13,9 @@ import {
 import CoinInfo from "../components/CoinInfo";
 import ReactHtmlParser from "react-html-parser";
 import { numberWithCommas } from "../components/CoinsTable";
+import toast from "react-hot-toast";
+import coinsAtom from "../atoms/coinsAtom";
+import userAtom from "../atoms/userAtom";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -69,8 +72,14 @@ function CoinPage() {
   const { coinId } = useParams();
 
   const [coin, setCoin] = useState(null);
+  const [loading, setLoading] = useState(false);
+  // const setCoins = useSetRecoilState(coinsAtom);
+  const [coins, setCoins] = useRecoilState(coinsAtom);
+  const user = useRecoilValue(userAtom);
   const currency = useRecoilValue(currencyAtom);
   const symbol = currency === "INR" ? "₹" : "$";
+
+  const jwt = JSON.parse(localStorage.getItem("user")).jwt;
 
   useEffect(() => {
     async function fetchCoin() {
@@ -80,6 +89,33 @@ function CoinPage() {
     fetchCoin();
   }, [coinId]);
   // console.log(url);
+
+  async function handleAddCoin() {
+    try {
+      setLoading(true);
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_APP_URL}/coins/${coinId}`,
+        {},
+        {
+          headers: {
+            Authorization: "Bearer " + jwt,
+          },
+        }
+      );
+      const coin = data.coin;
+
+      setCoins((prev) => [...prev, coin]);
+      toast.success(data.msg);
+    } catch (error) {
+      if (
+        error.response.data.error.startsWith("\nInvalid `prisma.user.update()")
+      )
+        return toast.error("Coin already present in your watchlist");
+      else return toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const { container, sidebar, heading, description, marketData } = useStyles();
 
@@ -137,9 +173,16 @@ function CoinPage() {
               M
             </Typography>
           </span>
-          <Button variant="contained" style={{ backgroundColor: "#EEBC1D" }}>
-            Add to Watchlist
-          </Button>
+          {user && (
+            <Button
+              disabled={loading}
+              onClick={handleAddCoin}
+              variant="contained"
+              style={{ backgroundColor: "#EEBC1D" }}
+            >
+              {loading ? "Adding coin" : "Add to Watchlist"}
+            </Button>
+          )}
         </div>
       </div>
 

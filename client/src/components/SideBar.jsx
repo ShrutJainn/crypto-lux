@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
 import Button from "@material-ui/core/Button";
 import { Typography } from "@material-ui/core";
 import { numberWithCommas } from "./CoinsTable";
 import { AiFillDelete } from "react-icons/ai";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import coinsAtom from "../atoms/coinsAtom";
 const useStyles = makeStyles({
   container: {
     width: 350,
@@ -33,6 +37,7 @@ const useStyles = makeStyles({
     overflowY: "scroll",
   },
   coinItem: {
+    cursor: "pointer",
     padding: 10,
     borderRadius: 5,
     color: "black",
@@ -47,25 +52,34 @@ const useStyles = makeStyles({
 });
 
 export default function SideBar() {
+  const navigate = useNavigate();
   const { container, watchlist, coinItem } = useStyles();
+  const [coins, setCoins] = useRecoilState(coinsAtom);
+
   const user = useRecoilValue(userAtom);
-  const name = user.name.charAt(0).toUpperCase() + user.name.slice(1);
-  const coins = [
-    {
-      id: "bitcoin",
-      name: "Bitcoin",
-      price: 5994210,
-      image:
-        "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400",
-    },
-    {
-      id: "thether",
-      name: "Thether",
-      price: 879087,
-      image:
-        "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
-    },
-  ];
+  const name = user && user.name.charAt(0).toUpperCase() + user.name.slice(1);
+
+  const jwt = JSON.parse(localStorage.getItem("user"))?.jwt;
+
+  useEffect(() => {
+    async function getCoins() {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_APP_URL}/coins/`,
+          {
+            headers: {
+              Authorization: "Bearer " + jwt,
+            },
+          }
+        );
+        setCoins(data.coins);
+      } catch (error) {
+        return toast.error(error.message);
+      }
+    }
+    getCoins();
+  }, [jwt, setCoins]);
+
   const [state, setState] = React.useState({
     right: false,
   });
@@ -81,13 +95,42 @@ export default function SideBar() {
     setState({ ...state, [anchor]: open });
   };
 
-  const symbol = "₹";
+  async function handleDelete(coin, anchor) {
+    try {
+      const coinId = coin.id;
+      const { data } = await axios.delete(
+        `${import.meta.env.VITE_APP_URL}/coins/${coinId}`,
+        {
+          headers: {
+            Authorization: "Bearer " + jwt,
+          },
+        }
+      );
+      setCoins(coins.filter((coin) => coin.id !== coinId));
+      toggleDrawer(anchor, false);
+      toast.success(data.msg);
+    } catch (error) {
+      return toast.error(error.message);
+    }
+  }
+
+  function handleLogout() {
+    toast.success("User Logged Out");
+    navigate("/");
+    localStorage.removeItem("user");
+    window.location.reload();
+  }
 
   return (
     <div>
       {["right"].map((anchor) => (
         <React.Fragment key={anchor}>
-          <Button onClick={toggleDrawer(anchor, true)}>Profile</Button>
+          <Button
+            style={{ color: "white" }}
+            onClick={toggleDrawer(anchor, true)}
+          >
+            Profile
+          </Button>
           <Drawer
             anchor={anchor}
             open={state[anchor]}
@@ -101,13 +144,14 @@ export default function SideBar() {
                 </Typography>
                 {coins.map((coin) => {
                   return (
-                    <div key={coin.id} className={coinItem}>
+                    <div
+                      onClick={() => navigate(`/coins/${coin.id}`)}
+                      key={coin.id}
+                      className={coinItem}
+                    >
                       <span>{coin.name}</span>
-                      <span style={{ display: "flex", gap: 8 }}>
-                        {symbol}
-                        {numberWithCommas(coin.price.toFixed())}
-                      </span>
                       <AiFillDelete
+                        onClick={() => handleDelete(coin, anchor)}
                         style={{ cursor: "pointer" }}
                         fontSize="16"
                       />
@@ -116,7 +160,11 @@ export default function SideBar() {
                 })}
               </div>
             </div>
-            <Button variant="contained" style={{ backgroundColor: "#EEBC1D" }}>
+            <Button
+              onClick={handleLogout}
+              variant="contained"
+              style={{ backgroundColor: "#EEBC1D" }}
+            >
               Logout
             </Button>
           </Drawer>

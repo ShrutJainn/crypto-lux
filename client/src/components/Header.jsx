@@ -53,7 +53,6 @@ function Header() {
       type: "dark",
     },
   });
-
   return (
     <ThemeProvider theme={darkTheme}>
       <AppBar color="transparent" position="static">
